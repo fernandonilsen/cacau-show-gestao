@@ -224,6 +224,7 @@ async function carregarHistoricoVendas() {
             quantidade,
             valor_total,
             created_at,
+            comprador,
             produtos (nome),
             profiles (nome)
         `)
@@ -239,6 +240,7 @@ async function carregarHistoricoVendas() {
         tbody.innerHTML += `
             <tr>
                 <td>${venda.produtos?.nome || 'Produto Removido'}</td>
+                <td>${venda.comprador || 'Cliente Balcão'}</td>
                 <td>${venda.quantidade}</td>
                 <td>R$ ${Number(venda.valor_total).toFixed(2)}</td>
                 <td>${dataFormatada}</td>
@@ -476,7 +478,9 @@ if (tabelaProdutosPdv) {
     document.getElementById('btn-finalizar-venda').addEventListener('click', async () => {
         if (carrinho.length === 0) return;
 
-        if (!confirm('Deseja confirmar e finalizar esta venda?')) return;
+        const nomeComprador = document.getElementById('nome-comprador').value.trim() || 'Cliente Balcão';
+
+        if (!confirm(`Deseja finalizar a venda para ${nomeComprador}?`)) return;
 
         const { data: { session } } = await _supabase.auth.getSession();
         if (!session) {
@@ -485,11 +489,9 @@ if (tabelaProdutosPdv) {
             return;
         }
 
-        // Processar cada item do carrinho
         let erroOcorrido = false;
 
         for (const item of carrinho) {
-            // 1. Verificar estoque atual no banco antes de dar baixa
             const { data: prodAtual, error: errBusca } = await _supabase
                 .from('produtos')
                 .select('estoque')
@@ -502,12 +504,13 @@ if (tabelaProdutosPdv) {
                 break;
             }
 
-            // 2. Registrar na tabela de vendas
+            // Registra a venda incluindo o comprador
             const { error: errVenda } = await _supabase.from('vendas').insert([{
                 produto_id: item.id,
                 quantidade: item.quantidade,
                 valor_total: item.preco * item.quantidade,
-                user_id: session.user.id
+                user_id: session.user.id,
+                comprador: nomeComprador
             }]);
 
             if (errVenda) {
@@ -516,7 +519,6 @@ if (tabelaProdutosPdv) {
                 break;
             }
 
-            // 3. Atualizar estoque no banco
             const novoEstoque = prodAtual.estoque - item.quantidade;
             const { error: errEstoque } = await _supabase
                 .from('produtos')
@@ -533,6 +535,7 @@ if (tabelaProdutosPdv) {
         if (!erroOcorrido) {
             alert('Venda finalizada com sucesso!');
             carrinho = [];
+            document.getElementById('nome-comprador').value = '';
             atualizarCarrinhoUI();
             carregarProdutosPDV();
             carregarHistoricoVendas();
