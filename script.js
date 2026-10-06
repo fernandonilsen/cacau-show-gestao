@@ -441,10 +441,10 @@ if (formNovoUsuario) {
         const novoUserId = authData.user?.id;
 
         if (novoUserId) {
-            // Inserir ou atualizar na tabela profiles (sem a coluna email)
+            // Inserir explicitamente na tabela profiles
             const { error: profileError } = await _supabase
                 .from('profiles')
-                .upsert([
+                .insert([
                     { id: novoUserId, nome: nome, role: role }
                 ]);
 
