@@ -405,26 +405,50 @@ if (formNovoUsuario) {
 
     formNovoUsuario.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const nome = document.getElementById('novo-nome').value;
-        const email = document.getElementById('novo-email').value;
-        const senha = document.getElementById('novo-senha').value;
+        const nome = document.getElementById('novo-nome').value.trim();
+        const email = document.getElementById('novo-email').value.trim();
+        const senha = document.getElementById('novo-senha').value.trim();
         const role = document.getElementById('novo-role').value;
 
+        // Salva o token/sessão atual do admin para não perder a sessão
+        const { data: sessionData } = await _supabase.auth.getSession();
+        
         // Criar usuário utilizando o Supabase Auth
-        const { data, error } = await _supabase.auth.signUp({
+        const { data: authData, error: authError } = await _supabase.auth.signUp({
             email: email,
-            password: senha,
-            options: {
-                data: { nome: nome, role: role } // Passa metadados para triggers ou uso posterior
-            }
+            password: senha
         });
 
-        if (error) {
-            alert('Erro ao cadastrar usuário: ' + error.message);
-        } else {
-            alert('Colaborador cadastrado com sucesso! (Certifique-se de que o perfil também foi criado na tabela profiles se necessário).');
-            formNovoUsuario.reset();
-            carregarTabelaUsuarios();
+        if (authError) {
+            alert('Erro ao criar credenciais de acesso: ' + authError.message);
+            return;
+        }
+
+        const novoUserId = authData.user?.id;
+
+        if (novoUserId) {
+            // Inserir ou atualizar explicitamente na tabela profiles
+            const { error: profileError } = await _supabase
+                .from('profiles')
+                .upsert([
+                    { id: novoUserId, nome: nome, email: email, role: role }
+                ]);
+
+            if (profileError) {
+                alert('Erro ao salvar os dados do perfil: ' + profileError.message);
+            } else {
+                alert('Colaborador cadastrado com sucesso!');
+                formNovoUsuario.reset();
+                carregarTabelaUsuarios();
+            }
+        }
+
+        // Restaura a sessão do administrador se ela tiver sido alterada pelo signUp
+        if (sessionData?.session) {
+            await _supabase.auth.setSession({
+                access_token: sessionData.session.access_token,
+                refresh_token: sessionData.session.refresh_token
+            });
         }
     });
 }
