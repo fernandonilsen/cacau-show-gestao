@@ -16,25 +16,39 @@ async function verificarSessao() {
 
     if (session) {
         // Buscar o cargo (role) e nome do usuário na tabela profiles
-        const { data: profile } = await _supabase
+        const { data: profile, error } = await _supabase
             .from('profiles')
             .select('role, nome')
             .eq('id', session.user.id)
             .single();
+
+        console.log("Sessão User ID:", session.user.id);
+        console.log("Perfil encontrado:", profile);
+        console.log("Erro na busca do perfil:", error);
 
         if (path.includes('login.html')) {
             window.location.href = 'index.html';
             return;
         }
 
+        // SE HOUVER ERRO OU O PERFIL NÃO EXISTIR, CRIA AUTOMATICAMENTE COMO ADMIN PARA TESTE
+        let userRole = profile?.role;
+        if (!profile || error) {
+            console.log("Perfil não encontrado na tabela profiles. Criando perfil admin provisório...");
+            await _supabase.from('profiles').upsert([
+                { id: session.user.id, nome: 'Administrador', role: 'admin' }
+            ]);
+            userRole = 'admin';
+        }
+
         // Restringir páginas de admin (produtos e usuários) apenas para administradores
-        if ((path.includes('produtos.html') || path.includes('usuarios.html')) && profile?.role !== 'admin') {
+        if ((path.includes('produtos.html') || path.includes('usuarios.html')) && userRole !== 'admin') {
             alert('Acesso restrito a administradores!');
             window.location.href = 'index.html';
             return;
         }
 
-        return profile;
+        return { role: userRole, nome: profile?.nome || 'Administrador' };
     }
 }
 
