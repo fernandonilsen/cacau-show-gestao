@@ -3,43 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cacau Show - Gestão de Vendas</title>
+    <title>Cacau Show - PDV / Vendas</title>
     <link rel="stylesheet" href="style.css">
+    <!-- SDK do Supabase via CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <aside>
         <h2>Cacau Show</h2>
         <nav>
-    <a href="index.html">🛒 Vendas</a>
-    <a href="produtos.html">🍫 Produtos</a>
-    <a href="relatorios.html">📊 Relatórios</a>
-    <a href="usuarios.html" class="active">👥 Usuários</a>
-</nav>
+            <a href="index.html" class="active">🛒 Vendas / PDV</a>
+            <a href="produtos.html">🍫 Produtos</a>
+            <a href="relatorios.html">📊 Relatórios</a>
+            <a href="usuarios.html">👥 Usuários</a>
+        </nav>
     </aside>
 
     <main>
-        <h1>Registrar Venda</h1>
+        <h1>Ponto de Venda (PDV)</h1>
         
-        <div class="card">
-            <form id="form-venda">
-                <select id="produto-select" required>
-                    <option value="">Selecione um produto</option>
-                </select>
-                <input type="number" id="quantidade-venda" placeholder="Quantidade" min="1" required>
-                <button type="submit">Concluir Venda</button>
-            </form>
+        <div class="pdv-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+            
+            <!-- Coluna da Esquerda: Produtos Disponíveis -->
+            <div class="card">
+                <h3>🍫 Produtos Disponíveis</h3>
+                <div style="margin-bottom: 1rem;">
+                    <input type="text" id="busca-produto-pdv" placeholder="Pesquisar produto..." style="margin-bottom: 0;">
+                </div>
+                <div style="max-height: 400px; overflow-y: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Produto</th>
+                                <th>Preço</th>
+                                <th>Estoque</th>
+                                <th style="text-align: center;">Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-produtos-pdv">
+                            <!-- Preenchido via JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Coluna da Direita: Carrinho / Comanda Atual -->
+            <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+                <div>
+                    <h3>🛒 Carrinho da Venda</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Qtd</th>
+                                <th>Subtotal</th>
+                                <th style="text-align: center;">X</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-carrinho">
+                            <tr>
+                                <td colspan="4" style="text-align: center; color: #7c7c8a;">Carrinho vazio</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style="border-top: 1px solid var(--border); padding-top: 1rem; margin-top: 1rem;">
+                    <input type="text" id="nome-comprador" placeholder="Nome do comprador (opcional)" style="margin-bottom: 0.75rem;">
+                    <h2 style="font-size: 1.4rem; margin-bottom: 1rem;">Total: <span id="carrinho-total" style="color: var(--accent);">R$ 0,00</span></h2>
+                    <button id="btn-finalizar-venda" style="background-color: var(--accent); color: #121214; font-size: 1rem;" disabled>Finalizar Venda</button>
+                </div>
+            </div>
+
         </div>
 
-        <div class="card">
-            <h3>Histórico de Vendas</h3>
+        <!-- Histórico de Vendas Recentes -->
+        <div class="card" style="margin-top: 1.5rem;">
+            <h3>Últimas Vendas Registradas</h3>
             <table>
                 <thead>
                     <tr>
-                        <th>Produto</th>
-                        <th>Qtd</th>
-                        <th>Total</th>
-                        <th>Data</th>
+                        <th>Produto(s) / Detalhes</th>
+                        <th>Comprador</th> <!-- NOVO -->
+                        <th>Qtd Total</th>
+                        <th>Valor Total</th>
+                        <th>Data / Hora</th>
                     </tr>
                 </thead>
                 <tbody id="tabela-vendas">

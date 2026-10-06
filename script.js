@@ -457,3 +457,197 @@ async function carregarTabelaUsuarios() {
         `;
     });
 }
+
+// --- LÓGICA DO PDV / CARRINHO DE COMPRAS ---
+let carrinho = [];
+
+const tabelaProdutosPdv = document.getElementById('tabela-produtos-pdv');
+if (tabelaProdutosPdv) {
+    setupLayout();
+    carregarProdutosPDV();
+    carregarHistoricoVendas();
+
+    // Evento de busca rápida de produtos no PDV
+    document.getElementById('busca-produto-pdv').addEventListener('input', (e) => {
+        carregarProdutosPDV(e.target.value);
+    });
+
+    // Evento de finalizar venda
+    document.getElementById('btn-finalizar-venda').addEventListener('click', async () => {
+        if (carrinho.length === 0) return;
+
+        if (!confirm('Deseja confirmar e finalizar esta venda?')) return;
+
+        const { data: { session } } = await _supabase.auth.getSession();
+        if (!session) {
+            alert('Sessão expirada. Faça login novamente.');
+            window.location.href = 'login.html';
+            return;
+        }
+
+        // Processar cada item do carrinho
+        let erroOcorrido = false;
+
+        for (const item of carrinho) {
+            // 1. Verificar estoque atual no banco antes de dar baixa
+            const { data: prodAtual, error: errBusca } = await _supabase
+                .from('produtos')
+                .select('estoque')
+                .eq('id', item.id)
+                .single();
+
+            if (errBusca || prodAtual.estoque < item.quantidade) {
+                alert(`Estoque insuficiente para o produto: ${item.nome}`);
+                erroOcorrido = true;
+                break;
+            }
+
+            // 2. Registrar na tabela de vendas
+            const { error: errVenda } = await _supabase.from('vendas').insert([{
+                produto_id: item.id,
+                quantidade: item.quantidade,
+                valor_total: item.preco * item.quantidade,
+                user_id: session.user.id
+            }]);
+
+            if (errVenda) {
+                alert(`Erro ao registrar venda de ${item.nome}: ` + errVenda.message);
+                erroOcorrido = true;
+                break;
+            }
+
+            // 3. Atualizar estoque no banco
+            const novoEstoque = prodAtual.estoque - item.quantidade;
+            const { error: errEstoque } = await _supabase
+                .from('produtos')
+                .update({ estoque: novoEstoque })
+                .eq('id', item.id);
+
+            if (errEstoque) {
+                alert(`Erro ao atualizar estoque de ${item.nome}`);
+                erroOcorrido = true;
+                break;
+            }
+        }
+
+        if (!erroOcorrido) {
+            alert('Venda finalizada com sucesso!');
+            carrinho = [];
+            atualizarCarrinhoUI();
+            carregarProdutosPDV();
+            carregarHistoricoVendas();
+        }
+    });
+}
+
+async function carregarProdutosPDV(filtro = '') {
+    const tbody = document.getElementById('tabela-produtos-pdv');
+    if (!tbody) return;
+
+    let query = _supabase.from('produtos').select('*').gt('estoque', 0).order('nome', { ascending: true });
+    
+    const { data, error } = await query;
+    if (error) return console.error(error);
+
+    tbody.innerHTML = '';
+    const produtosFiltrados = data.filter(p => p.nome.toLowerCase().includes(filtro.toLowerCase()));
+
+    if (produtosFiltrados.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #7c7c8a;">Nenhum produto encontrado</td></tr>`;
+        return;
+    }
+
+    produtosFiltrados.forEach(prod => {
+        tbody.innerHTML += `
+            <tr>
+                <td>${prod.nome}</td>
+                <td>R$ ${Number(prod.preco).toFixed(2)}</td>
+                <td>${prod.estoque}</td>
+                <td style="text-align: center;">
+                    <button class="btn-acao" style="background-color: var(--accent); color: #121214; width: auto; padding: 0.3rem 0.6rem;" onclick="adicionarAoCarrinho(${prod.id}, '${prod.nome}', ${prod.preco}, ${prod.estoque})">➕ Adicionar</button>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+function adicionarAoCarrinho(id, nome, preco, estoqueDisponivel) {
+    const itemExistente = carrinho.find(item => item.id === id);
+
+    if (itemExistente) {
+        if (itemExistente.quantidade + 1 > estoqueDisponivel) {
+            alert('Quantidade excede o estoque disponível!');
+            return;
+        }
+        itemExistente.quantidade += 1;
+    } else {
+        carrinho.push({ id, nome, preco, quantidade: 1, estoque: estoqueDisponivel });
+    }
+
+    atualizarCarrinhoUI();
+}
+
+function removerDoCarrinho(id) {
+    carrinho = carrinho.filter(item => item.id !== id);
+    atualizarCarrinhoUI();
+}
+
+function alterarQtdCarrinho(id, delta) {
+    const item = carrinho.find(i => i.id === id);
+    if (!item) return;
+
+    const novaQtd = item.quantidade + delta;
+    if (novaQtd <= 0) {
+        removerDoCarrinho(id);
+        return;
+    }
+    if (novaQtd > item.estoque) {
+        alert('Estoque insuficiente!');
+        return;
+    }
+
+    item.quantidade = novaQtd;
+    atualizarCarrinhoUI();
+}
+
+function atualizarCarrinhoUI() {
+    const tbody = document.getElementById('tabela-carrinho');
+    const totalEl = document.getElementById('carrinho-total');
+    const btnFinalizar = document.getElementById('btn-finalizar-venda');
+    if (!tbody) return;
+
+    if (carrinho.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #7c7c8a;">Carrinho vazio</td></tr>`;
+        totalEl.innerText = `R$ 0,00`;
+        btnFinalizar.disabled = true;
+        btnFinalizar.style.opacity = '0.5';
+        return;
+    }
+
+    tbody.innerHTML = '';
+    let totalGeral = 0;
+
+    carrinho.forEach(item => {
+        const subtotal = item.preco * item.quantidade;
+        totalGeral += subtotal;
+
+        tbody.innerHTML += `
+            <tr>
+                <td>${item.nome}</td>
+                <td>
+                    <button onclick="alterarQtdCarrinho(${item.id}, -1)" style="padding: 0.1rem 0.4rem; width: auto; margin-bottom:0;">-</button>
+                    <span style="margin: 0 0.4rem;">${item.quantidade}</span>
+                    <button onclick="alterarQtdCarrinho(${item.id}, 1)" style="padding: 0.1rem 0.4rem; width: auto; margin-bottom:0;">+</button>
+                </td>
+                <td>R$ ${subtotal.toFixed(2)}</td>
+                <td style="text-align: center;">
+                    <button onclick="removerDoCarrinho(${item.id})" style="background-color: var(--danger); padding: 0.2rem 0.5rem; width: auto; margin-bottom:0;">❌</button>
+                </td>
+            </tr>
+        `;
+    });
+
+    totalEl.innerText = `R$ ${totalGeral.toFixed(2)}`;
+    btnFinalizar.disabled = false;
+    btnFinalizar.style.opacity = '1';
+}
