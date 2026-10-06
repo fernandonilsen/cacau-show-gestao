@@ -1,0 +1,154 @@
+:root {
+    --bg-color: #121214;
+    --card-bg: #202024;
+    --text-color: #e1e1e6;
+    --primary: #552001; /* Tom Cacau */
+    --primary-hover: #b44407;
+    --accent: #00e9a3;
+    --danger: #7c000a;
+    --border: #323238;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    display: flex;
+    min-height: 100vh;
+}
+
+aside {
+    width: 250px;
+    background-color: var(--card-bg);
+    border-right: 1px solid var(--border);
+    padding: 2rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+aside h2 {
+    color: var(--primary);
+    font-size: 1.2rem;
+    text-align: center;
+}
+
+aside nav a {
+    color: var(--text-color);
+    text-decoration: none;
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    display: block;
+    transition: 0.2s;
+}
+
+aside nav a:hover, aside nav a.active {
+    background-color: var(--primary);
+}
+
+main {
+    flex: 1;
+    padding: 2.5rem;
+    overflow-y: auto;
+}
+
+h1 {
+    margin-bottom: 1.5rem;
+    font-size: 1.8rem;
+}
+
+.card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+input, select, button {
+    width: 100%;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    background-color: var(--bg-color);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-color);
+}
+
+button {
+    background-color: var(--primary);
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+button:hover {
+    background-color: var(--primary-hover);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+th, td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+
+th {
+    background-color: var(--card-bg);
+}
+
+.logout-btn {
+    margin-top: auto;
+    background-color: var(--danger) !important;
+}
+.logout-btn:hover {
+    background-color: #fa0015 !important;
+}
+
+.estoque-baixo {
+    color: var(--danger);
+    font-weight: bold;
+}
+
+.badge-alerta {
+    background-color: rgba(247, 90, 104, 0.2);
+    color: var(--danger);
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+}
+
+.btn-acao {
+    padding: 0.35rem 0.6rem;
+    font-size: 0.8rem;
+    margin-right: 0.3rem;
+    margin-bottom: 0;
+    width: auto;
+    display: inline-block;
+}
+
+.btn-editar {
+    background-color: #005f63;
+}
+.btn-editar:hover {
+    background-color: #009e96;
+}
+
+.btn-excluir {
+    background-color: var(--danger);
+}
+.btn-excluir:hover {
+    background-color: #c40111;
+}

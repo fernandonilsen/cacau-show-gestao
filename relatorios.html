@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cacau Show - Relatórios</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Chart.js para os gráficos -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+<body>
+    <aside>
+        <h2>Cacau Show</h2>
+        <nav>
+            <a href="index.html">🛒 Vendas</a>
+            <a href="produtos.html">🍫 Produtos</a>
+            <a href="relatorios.html" class="active">📊 Relatórios</a>
+            <a href="usuarios.html">👥 Usuários</a>
+        </nav>
+    </aside>
+
+    <main>
+        <h1>Relatório de Vendas</h1>
+        
+        <div class="card">
+            <h3>Filtrar por Período</h3>
+            <div style="display: flex; gap: 1rem; align-items: flex-end;">
+                <div style="flex: 1;">
+                    <label style="font-size: 0.85rem; color: #a8582d;">Data Inicial</label>
+                    <input type="date" id="data-inicio">
+                </div>
+                <div style="flex: 1;">
+                    <label style="font-size: 0.85rem; color: #a8582d;">Data Final</label>
+                    <input type="date" id="data-fim">
+                </div>
+                <div style="flex: 0 0 150px;">
+                    <button id="btn-filtrar" style="margin-bottom: 0;">Filtrar</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h4 style="color: #a8582d; font-size: 0.9rem;">Faturamento no Período</h4>
+                <h2 id="faturamento-total" style="font-size: 1.8rem; margin-top: 0.2rem;">R$ 0,00</h2>
+            </div>
+            <div>
+                <h4 style="color: #a8582d; font-size: 0.9rem;">Total de Vendas</h4>
+                <h2 id="quantidade-vendas" style="font-size: 1.8rem; margin-top: 0.2rem;">0</h2>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Detalhamento das Vendas</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data/Hora</th>
+                        <th>Produto</th>
+                        <th>Qtd</th>
+                        <th>Total</th>
+                        <th>Vendedor</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-relatorio">
+                    <!-- Preenchido via JS -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card">
+    <h3>📊 Faturamento por Período</h3>
+    <canvas id="graficoVendas"></canvas>
+</div>
+
+<div class="card">
+    <h3>🍫 Produtos Mais Vendidos</h3>
+    <canvas id="graficoProdutos"></canvas>
+</div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>

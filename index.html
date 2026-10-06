@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cacau Show - Gestão de Vendas</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <aside>
+        <h2>Cacau Show</h2>
+        <nav>
+    <a href="index.html">🛒 Vendas</a>
+    <a href="produtos.html">🍫 Produtos</a>
+    <a href="relatorios.html">📊 Relatórios</a>
+    <a href="usuarios.html" class="active">👥 Usuários</a>
+</nav>
+    </aside>
+
+    <main>
+        <h1>Registrar Venda</h1>
+        
+        <div class="card">
+            <form id="form-venda">
+                <select id="produto-select" required>
+                    <option value="">Selecione um produto</option>
+                </select>
+                <input type="number" id="quantidade-venda" placeholder="Quantidade" min="1" required>
+                <button type="submit">Concluir Venda</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h3>Histórico de Vendas</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Produto</th>
+                        <th>Qtd</th>
+                        <th>Total</th>
+                        <th>Data</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-vendas">
+                    <!-- Preenchido via JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>

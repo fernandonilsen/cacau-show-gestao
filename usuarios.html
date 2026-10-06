@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cacau Show - Gestão de Equipe</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <aside>
+        <h2>Cacau Show</h2>
+        <nav>
+            <a href="index.html">📦 Vendas / PDV</a>
+            <a href="produtos.html">🍫 Produtos</a>
+            <a href="relatorios.html">📈 Relatórios</a>
+            <a href="usuarios.html" class="active">👥 Usuários</a>
+        </nav>
+    </aside>
+
+    <main>
+        <h1>👥 Gestão de Equipe e Permissões</h1>
+
+        <!-- Card para cadastrar novo usuário -->
+        <div class="card">
+            <h3>Cadastrar Novo Funcionário</h3>
+            <form id="form-novo-usuario">
+                <input type="text" id="novo-nome" placeholder="Nome Completo" required>
+                <input type="email" id="novo-email" placeholder="E-mail de acesso" required>
+                <input type="password" id="novo-senha" placeholder="Senha temporária" required>
+                <select id="novo-role">
+                    <option value="vendedor">Vendedor</option>
+                    <option value="admin">Administrador</option>
+                </select>
+                <button type="submit">Cadastrar Colaborador</button>
+            </form>
+        </div>
+
+        <!-- Card com a lista de usuários -->
+        <div class="card">
+            <h3>Equipe Cadastrada</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>E-mail</th>
+                        <th>Cargo</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-usuarios">
+                    <!-- Preenchido via JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="script.js"></script>
+</body>
+</html>
